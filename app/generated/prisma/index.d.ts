@@ -2871,7 +2871,6 @@ export namespace Prisma {
   export type CharacterMinAggregateOutputType = {
     id: number | null
     name: string | null
-    description: string | null
     cover: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2880,7 +2879,6 @@ export namespace Prisma {
   export type CharacterMaxAggregateOutputType = {
     id: number | null
     name: string | null
-    description: string | null
     cover: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2908,7 +2906,6 @@ export namespace Prisma {
   export type CharacterMinAggregateInputType = {
     id?: true
     name?: true
-    description?: true
     cover?: true
     createdAt?: true
     updatedAt?: true
@@ -2917,7 +2914,6 @@ export namespace Prisma {
   export type CharacterMaxAggregateInputType = {
     id?: true
     name?: true
-    description?: true
     cover?: true
     createdAt?: true
     updatedAt?: true
@@ -3022,7 +3018,7 @@ export namespace Prisma {
   export type CharacterGroupByOutputType = {
     id: number
     name: string
-    description: string
+    description: JsonValue
     cover: string
     createdAt: Date
     updatedAt: Date
@@ -3075,7 +3071,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: number
       name: string
-      description: string
+      description: Prisma.JsonValue
       cover: string
       createdAt: Date
       updatedAt: Date
@@ -3450,7 +3446,7 @@ export namespace Prisma {
   interface CharacterFieldRefs {
     readonly id: FieldRef<"Character", 'Int'>
     readonly name: FieldRef<"Character", 'String'>
-    readonly description: FieldRef<"Character", 'String'>
+    readonly description: FieldRef<"Character", 'Json'>
     readonly cover: FieldRef<"Character", 'String'>
     readonly createdAt: FieldRef<"Character", 'DateTime'>
     readonly updatedAt: FieldRef<"Character", 'DateTime'>
@@ -3830,6 +3826,13 @@ export namespace Prisma {
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
   export const NullsOrder: {
     first: 'first',
     last: 'last'
@@ -3855,9 +3858,25 @@ export namespace Prisma {
   export type DictionaryOrderByRelevanceFieldEnum = (typeof DictionaryOrderByRelevanceFieldEnum)[keyof typeof DictionaryOrderByRelevanceFieldEnum]
 
 
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
+
+
+  export const QueryMode: {
+    default: 'default',
+    insensitive: 'insensitive'
+  };
+
+  export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
   export const CharacterOrderByRelevanceFieldEnum: {
     name: 'name',
-    description: 'description',
     cover: 'cover'
   };
 
@@ -3887,6 +3906,20 @@ export namespace Prisma {
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -4011,7 +4044,7 @@ export namespace Prisma {
     NOT?: CharacterWhereInput | CharacterWhereInput[]
     id?: IntFilter<"Character"> | number
     name?: StringFilter<"Character"> | string
-    description?: StringFilter<"Character"> | string
+    description?: JsonFilter<"Character">
     cover?: StringFilter<"Character"> | string
     createdAt?: DateTimeFilter<"Character"> | Date | string
     updatedAt?: DateTimeFilter<"Character"> | Date | string
@@ -4033,7 +4066,7 @@ export namespace Prisma {
     AND?: CharacterWhereInput | CharacterWhereInput[]
     OR?: CharacterWhereInput[]
     NOT?: CharacterWhereInput | CharacterWhereInput[]
-    description?: StringFilter<"Character"> | string
+    description?: JsonFilter<"Character">
     cover?: StringFilter<"Character"> | string
     createdAt?: DateTimeFilter<"Character"> | Date | string
     updatedAt?: DateTimeFilter<"Character"> | Date | string
@@ -4059,7 +4092,7 @@ export namespace Prisma {
     NOT?: CharacterScalarWhereWithAggregatesInput | CharacterScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"Character"> | number
     name?: StringWithAggregatesFilter<"Character"> | string
-    description?: StringWithAggregatesFilter<"Character"> | string
+    description?: JsonWithAggregatesFilter<"Character">
     cover?: StringWithAggregatesFilter<"Character"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Character"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Character"> | Date | string
@@ -4166,7 +4199,7 @@ export namespace Prisma {
 
   export type CharacterCreateInput = {
     name: string
-    description: string
+    description: JsonNullValueInput | InputJsonValue
     cover: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -4175,7 +4208,7 @@ export namespace Prisma {
   export type CharacterUncheckedCreateInput = {
     id?: number
     name: string
-    description: string
+    description: JsonNullValueInput | InputJsonValue
     cover: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -4183,7 +4216,7 @@ export namespace Prisma {
 
   export type CharacterUpdateInput = {
     name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
     cover?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -4192,7 +4225,7 @@ export namespace Prisma {
   export type CharacterUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
     cover?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -4201,7 +4234,7 @@ export namespace Prisma {
   export type CharacterCreateManyInput = {
     id?: number
     name: string
-    description: string
+    description: JsonNullValueInput | InputJsonValue
     cover: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -4209,7 +4242,7 @@ export namespace Prisma {
 
   export type CharacterUpdateManyMutationInput = {
     name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
     cover?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -4218,7 +4251,7 @@ export namespace Prisma {
   export type CharacterUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
     cover?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -4419,6 +4452,29 @@ export namespace Prisma {
   export type DictionarySumOrderByAggregateInput = {
     id?: SortOrder
   }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type CharacterOrderByRelevanceInput = {
     fields: CharacterOrderByRelevanceFieldEnum | CharacterOrderByRelevanceFieldEnum[]
@@ -4442,7 +4498,6 @@ export namespace Prisma {
   export type CharacterMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    description?: SortOrder
     cover?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -4451,7 +4506,6 @@ export namespace Prisma {
   export type CharacterMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    description?: SortOrder
     cover?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -4459,6 +4513,32 @@ export namespace Prisma {
 
   export type CharacterSumOrderByAggregateInput = {
     id?: SortOrder
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -4619,6 +4699,29 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
 

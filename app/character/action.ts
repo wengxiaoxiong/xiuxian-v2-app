@@ -1,4 +1,4 @@
-import { PrismaClient } from "../generated/prisma"
+import { Character, PrismaClient } from "../generated/prisma"
 import { generateObject } from "ai"
 import deepseek from "@/utils/deepseek"
 import { z } from "zod"
@@ -8,7 +8,7 @@ const prisma = new PrismaClient()
 const character_prompt = "character_prompt"
 
 // 定义角色信息类型
-const CharacterSchema = z.object({
+const CharacterDescriptionSchema = z.object({
     角色名称: z.string(),
     人物背景: z.string(),
     外貌特征: z.string(),
@@ -33,6 +33,8 @@ const CharacterSchema = z.object({
     故事大纲: z.string()
 });
 
+
+// 定义角色状态类型
 const CharacterStatusSchema = z.object({
     灵根属性: z.enum(["金", "木", "水", "火", "土"]),
     等级: z.enum(["炼气", "筑基", "金丹", "元婴", "化神", "炼虚", "合体", "渡劫", "真仙"]),
@@ -40,15 +42,15 @@ const CharacterStatusSchema = z.object({
     年龄: z.number().min(0).default(0),
     寿元: z.number().min(0).default(100),
     体魄: z.number().int().min(0).default(40),
-    道心: z.number().min(0).max(1).default(3),
+    道心: z.number().min(0).max(3).default(3),
     灵力: z.number().int().min(0).default(40)
 });
 
 
-export type CharacterType = z.infer<typeof CharacterSchema>;
+export type CharacterDescriptionType = z.infer<typeof CharacterDescriptionSchema>;
+export type CharacterStatusType = z.infer<typeof CharacterStatusSchema>;
 
-
-export async function createCharacter(name: string): Promise<CharacterType | string> {
+export async function createCharacter(name: string): Promise<Character> {
     const USER_INPUT = "为" + name + "撰写角色档案和故事梗概，不论你让ta当主角配角，都要让ta活得精彩。"
 
     const dict = await prisma.dictionary.findFirst({
@@ -58,7 +60,7 @@ export async function createCharacter(name: string): Promise<CharacterType | str
     })
 
     if (!dict) {
-        return "没有找到Prompt角色描述"
+        throw new Error("没有找到Prompt角色描述")
     }
 
     const prompt_template = dict.value
@@ -66,7 +68,7 @@ export async function createCharacter(name: string): Promise<CharacterType | str
 
     const { object } = await generateObject({
         model: deepseek("deepseek-chat"),
-        schema: CharacterSchema,
+        schema: CharacterDescriptionSchema,
         prompt: prompt
     })
 
@@ -77,7 +79,7 @@ export async function createCharacter(name: string): Promise<CharacterType | str
     })
 
     // 将生成的角色信息存储到character表
-    await prisma.character.create({
+    const character = await prisma.character.create({
         data: {
             name: name,
             description: object,
@@ -86,12 +88,11 @@ export async function createCharacter(name: string): Promise<CharacterType | str
         }
     })
 
-    console.log(object)
-    return object
+    return character
 }
 
 
-export async function getCharacter(name: string): Promise<CharacterType | string> {
+export async function getCharacter(name: string): Promise<Character> {
     const character = await prisma.character.findFirst({
         where: {
             name: name
@@ -99,15 +100,43 @@ export async function getCharacter(name: string): Promise<CharacterType | string
     })
 
     if (!character) {
-        return "没有找到角色"
+        throw new Error("没有找到角色")
+    }
+    // 使用CharacterSchema解析Json类型的description
+    const parsedDescription = CharacterDescriptionSchema.safeParse(character.description)
+
+    if (!parsedDescription.success) {
+        throw new Error("角色数据格式错误")
+    }
+
+    return {
+        ...character,
+        description: parsedDescription.data
+    }
+}
+
+
+
+export async function getCharacterById(id: number): Promise<Character> {
+    const character = await prisma.character.findFirst({
+        where: {
+            id: id
+        }
+    })
+
+    if (!character) {
+        throw new Error("没有找到角色")
     }
 
     // 使用CharacterSchema解析Json类型的description
-    const parsedDescription = CharacterSchema.safeParse(character.description)
+    const parsedDescription = CharacterDescriptionSchema.safeParse(character.description)
     
     if (!parsedDescription.success) {
-        return "角色数据格式错误"
+        throw new Error("角色数据格式错误")
     }
 
-    return parsedDescription.data
+    return {
+        ...character,
+        description: parsedDescription.data
+    }
 }

@@ -32,7 +32,10 @@ model Dictionary {
 model Character {
   id          Int      @id @default(autoincrement())
   name        String   @unique
+  // 角色描述
   description Json
+  // 角色状态
+  status      Json?
   cover       String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

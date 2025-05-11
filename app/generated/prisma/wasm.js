@@ -136,6 +136,7 @@ exports.Prisma.CharacterScalarFieldEnum = {
   id: 'id',
   name: 'name',
   description: 'description',
+  status: 'status',
   cover: 'cover',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -147,6 +148,11 @@ exports.Prisma.SortOrder = {
 };
 
 exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull
 };
 

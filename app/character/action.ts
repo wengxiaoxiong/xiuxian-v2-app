@@ -15,9 +15,9 @@ const CharacterSchema = z.object({
     灵根属性: z.string(),
     人物年龄: z.number(),
     初始属性: z.object({
-        灵根: z.string(),
+        灵根: z.enum(["金", "木", "水", "火", "土"]),
         年龄: z.number(),
-        修为: z.string()
+        修为: z.enum(["炼气", "筑基", "金丹", "元婴", "化神", "炼虚", "合体", "渡劫", "真仙"])
     }),
     人物内在的驱动力: z.string(),
     人物使命与当前阶段: z.string(),
@@ -33,7 +33,20 @@ const CharacterSchema = z.object({
     故事大纲: z.string()
 });
 
+const CharacterStatusSchema = z.object({
+    灵根属性: z.enum(["金", "木", "水", "火", "土"]),
+    等级: z.enum(["炼气", "筑基", "金丹", "元婴", "化神", "炼虚", "合体", "渡劫", "真仙"]),
+    突破成功系数: z.number().min(0).max(1).default(0),
+    年龄: z.number().min(0).default(0),
+    寿元: z.number().min(0).default(100),
+    体魄: z.number().int().min(0).default(40),
+    道心: z.number().min(0).max(1).default(3),
+    灵力: z.number().int().min(0).default(40)
+});
+
+
 export type CharacterType = z.infer<typeof CharacterSchema>;
+
 
 export async function createCharacter(name: string): Promise<CharacterType | string> {
     const USER_INPUT = "为" + name + "撰写角色档案和故事梗概，不论你让ta当主角配角，都要让ta活得精彩。"
@@ -57,15 +70,44 @@ export async function createCharacter(name: string): Promise<CharacterType | str
         prompt: prompt
     })
 
+    // 创建初始状态
+    const initialStatus = CharacterStatusSchema.parse({
+        灵根属性: object.初始属性.灵根,
+        等级: object.初始属性.修为
+    })
+
     // 将生成的角色信息存储到character表
     await prisma.character.create({
         data: {
             name: name,
-            description: object, // 将对象转为字符串存储
-            cover: "" // 可以根据需要添加封面图片URL
+            description: object,
+            status: initialStatus, // 添加status字段
+            cover: ""
         }
     })
 
     console.log(object)
     return object
+}
+
+
+export async function getCharacter(name: string): Promise<CharacterType | string> {
+    const character = await prisma.character.findFirst({
+        where: {
+            name: name
+        }
+    })
+
+    if (!character) {
+        return "没有找到角色"
+    }
+
+    // 使用CharacterSchema解析Json类型的description
+    const parsedDescription = CharacterSchema.safeParse(character.description)
+    
+    if (!parsedDescription.success) {
+        return "角色数据格式错误"
+    }
+
+    return parsedDescription.data
 }

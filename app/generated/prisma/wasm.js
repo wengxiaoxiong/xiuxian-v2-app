@@ -142,6 +142,23 @@ exports.Prisma.CharacterScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.GameScalarFieldEnum = {
+  id: 'id',
+  characterId: 'characterId',
+  isEnded: 'isEnded',
+  isSuccess: 'isSuccess',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GamePushScalarFieldEnum = {
+  id: 'id',
+  push: 'push',
+  gameId: 'gameId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -192,7 +209,9 @@ exports.Prisma.CharacterOrderByRelevanceFieldEnum = {
 exports.Prisma.ModelName = {
   User: 'User',
   Dictionary: 'Dictionary',
-  Character: 'Character'
+  Character: 'Character',
+  Game: 'Game',
+  GamePush: 'GamePush'
 };
 
 /**

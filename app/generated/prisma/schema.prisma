@@ -39,4 +39,28 @@ model Character {
   cover       String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  game Game[]
+}
+
+model Game {
+  id          Int        @id @default(autoincrement())
+  characterId Int
+  character   Character  @relation(fields: [characterId], references: [id])
+  isEnded     Boolean    @default(false)
+  isSuccess   Boolean?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  gamePush    GamePush[]
+
+  @@unique([id, characterId])
+}
+
+model GamePush {
+  id        Int      @id @default(autoincrement())
+  push      Json
+  gameId    Int
+  game      Game     @relation(fields: [gameId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

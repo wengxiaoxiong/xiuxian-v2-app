@@ -8,7 +8,7 @@ const prisma = new PrismaClient()
 const character_prompt = "character_prompt"
 
 // 定义角色信息类型
-const CharacterDescriptionSchema = z.object({
+export const CharacterDescriptionSchema = z.object({
     角色名称: z.string(),
     人物背景: z.string(),
     外貌特征: z.string(),
@@ -17,7 +17,7 @@ const CharacterDescriptionSchema = z.object({
     初始属性: z.object({
         灵根: z.enum(["金", "木", "水", "火", "土"]),
         年龄: z.number(),
-        修为: z.enum(["炼气", "筑基", "金丹", "元婴", "化神", "炼虚", "合体", "渡劫", "真仙"])
+        等级: z.enum(["炼气", "筑基", "金丹", "元婴", "化神", "炼虚", "合体", "渡劫", "真仙"])
     }),
     人物内在的驱动力: z.string(),
     人物使命与当前阶段: z.string(),
@@ -35,7 +35,7 @@ const CharacterDescriptionSchema = z.object({
 
 
 // 定义角色状态类型
-const CharacterStatusSchema = z.object({
+export const CharacterStatusSchema = z.object({
     灵根属性: z.enum(["金", "木", "水", "火", "土"]),
     等级: z.enum(["炼气", "筑基", "金丹", "元婴", "化神", "炼虚", "合体", "渡劫", "真仙"]),
     突破成功系数: z.number().min(0).max(1).default(0),
@@ -43,7 +43,8 @@ const CharacterStatusSchema = z.object({
     寿元: z.number().min(0).default(100),
     体魄: z.number().int().min(0).default(40),
     道心: z.number().min(0).max(3).default(3),
-    灵力: z.number().int().min(0).default(40)
+    灵力: z.number().int().min(0).default(40),
+    是否死亡: z.boolean().default(false)
 });
 
 
@@ -75,7 +76,8 @@ export async function createCharacter(name: string): Promise<Character> {
     // 创建初始状态
     const initialStatus = CharacterStatusSchema.parse({
         灵根属性: object.初始属性.灵根,
-        等级: object.初始属性.修为
+        等级: object.初始属性.等级,
+        年龄: object.初始属性.年龄
     })
 
     // 将生成的角色信息存储到character表
@@ -92,7 +94,7 @@ export async function createCharacter(name: string): Promise<Character> {
 }
 
 
-export async function getCharacter(name: string): Promise<Character> {
+export async function getCharacterByName(name: string): Promise<Character> {
     const character = await prisma.character.findFirst({
         where: {
             name: name
@@ -139,4 +141,24 @@ export async function getCharacterById(id: number): Promise<Character> {
         ...character,
         description: parsedDescription.data
     }
+}
+
+export async function getCharacterStatus(id: number): Promise<CharacterStatusType> {
+    const character = await prisma.character.findFirst({
+        where: {
+            id: id
+        }
+    })
+
+    if (!character) {
+        throw new Error("没有找到角色")
+    }
+
+    const parsedStatus = CharacterStatusSchema.safeParse(character.status)
+
+    if (!parsedStatus.success) {
+        throw new Error("角色状态数据格式错误")
+    }
+
+    return parsedStatus.data
 }

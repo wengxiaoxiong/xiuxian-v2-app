@@ -1,6 +1,5 @@
-import {
-    createCharacter
-} from "@/app/character/action"
+
+import { startGame } from "@/app/game/action"
 
 async function main() {
 
@@ -8,8 +7,10 @@ async function main() {
     const currentTime = new Date().toISOString()
     console.log(currentTime)
 
-    const character = await createCharacter("没带红领巾的 张三")
-    console.log(character)
+
+    const game = await startGame(4)
+    console.log(JSON.stringify(game))
+
 
     // end time
     const endTime = new Date().toISOString()

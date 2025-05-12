@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { z } from "zod"
-import { CharacterDescriptionSchema, CharacterStatusSchema, getCharacterById } from "../character/action";
+import { CharacterDescriptionSchema, CharacterStatusSchema, getCharacterById, updateCharacterStatus } from "../character/action";
 import deepseek from "@/utils/deepseek";
 import { generateObject } from "ai";
 import {  PrismaClient } from "../generated/prisma";
@@ -73,6 +73,8 @@ export async function startGame(characterId: number) {
     当前角色状态: ${JSON.stringify(currentStatus)}
     `
 
+    console.log(dynamicInput)
+
     let prompt = story_prompt.replace("{CHARACTER_DESCRIPTION}", JSON.stringify(characterDescription))
     prompt = story_prompt.replace("{DYNAMIC_INPUT}", dynamicInput)
 
@@ -99,8 +101,16 @@ export async function startGame(characterId: number) {
         }
     })
 
+    // 更新角色状态
+    const newStatus = await updateCharacterStatus(characterId, gamePush)
+
+    console.log(`
+        更新后状态: ${JSON.stringify(newStatus)}
+    `)
+
     return {
         id: game.id,
-        gamePush: gamePush
+        gamePush: gamePush,
+        newStatus: newStatus
     }
 }

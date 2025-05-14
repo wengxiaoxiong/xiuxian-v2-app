@@ -3,10 +3,7 @@ import { generateObject } from "ai"
 import deepseek from "@/utils/deepseek"
 import { z } from "zod"
 import { StoryPushType } from "../game/action"
-import { 
-  getAttributeLimitsByLevel, 
-  getBreakthroughRewardsByLevel, 
-  getRandomRewardValue} from "./constants"
+import { getAttributeLimitsByLevel } from "./constants"
 
 const prisma = new PrismaClient()
 
@@ -48,7 +45,7 @@ export const CharacterStatusSchema = z.object({
     寿元: z.number().min(0).max(1000).default(100),
     体魄: z.number().int().min(0).max(300).default(40),
     道心: z.number().min(0).max(7).default(3),
-    灵力: z.number().int().min(0).default(50),
+    灵力: z.number().int().min(0).default(40),
     是否死亡: z.boolean().default(false)
 });
 
@@ -169,7 +166,22 @@ export async function getCharacterStatus(id: number): Promise<CharacterStatusTyp
 }
 
 // 根据变化程度获取基础值和变化百分比
-function getChangeValueByDegree(degree: string): { 基础值: number[], 变化百分比: number } {
+function getChangeValueByDegree(degree: string, attribute: string): { 基础值: number[], 变化百分比: number } {
+    // 对道心特殊处理
+    if (attribute === "道心") {
+        switch (degree) {
+            case "一点":
+            case "中等":
+                return { 基础值: [0.5, 0.5], 变化百分比: 0 }; // 道心基础值固定为0.5
+            case "多":
+            case "极多":
+                return { 基础值: [1, 1], 变化百分比: 0 }; // 道心基础值固定为1
+            default:
+                return { 基础值: [0, 0], 变化百分比: 0 };
+        }
+    }
+
+    // 对其他属性通用处理
     switch (degree) {
         case "一点":
             return { 基础值: [1, 2], 变化百分比: 0.05 };
@@ -186,7 +198,7 @@ function getChangeValueByDegree(degree: string): { 基础值: number[], 变化�
     }
 }
 
-// 获取闭区间上的随机的基础值
+// 获取随机的基础值
 function getRandomBaseValue(range: number[]): number {
     if (range.length < 2) return 0;
     const min = range[0];
@@ -195,23 +207,19 @@ function getRandomBaseValue(range: number[]): number {
 }
 
 // 根据属性、变化方向、变化程度计算属性变化值
-function calculateAttributeChange(attribute: string, currentValue: number, direction: "增加" | "减少", degree: string, level: string): number { 
+function calculateAttributeChange(attribute: string, currentValue: number, direction: "增加" | "减少", degree: string, level: string): number {
     // 如果是"全部"，且是减少，特殊处理
     if (degree === "全部" && direction === "减少") {
         if (attribute === "体魄") return -currentValue; // 清空体魄
         return 0; // 其他属性不处理全部减少
     }
 
-    const { 基础值, 变化百分比 } = getChangeValueByDegree(degree);
+    const { 基础值, 变化百分比 } = getChangeValueByDegree(degree, attribute);
     
-    // 特殊处理道心
-    if (attribute === "道心") {
-        const baseValue = degree === "一点" || degree === "中等" ? 0.5 : 1;
-        return direction === "增加" ? baseValue : -baseValue;
-    }
-
     // 获取随机基础值
-    const baseValue = getRandomBaseValue(基础值);
+    const baseValue = attribute === "道心" 
+        ? 基础值[0]  // 道心直接取固定值
+        : getRandomBaseValue(基础值);
     
     // 根据公式计算变化值
     let changeValue = 0;
@@ -220,17 +228,21 @@ function calculateAttributeChange(attribute: string, currentValue: number, direc
     if (attribute === "突破成功系数") {
         // 根据等级计算突破难度系数：越高等级，突破越难
         const levelDifficulty = {
-            "炼气": 0.90,
-            "筑基": 0.85,
-            "金丹": 0.80,
-            "元婴": 0.70,
-            "化神": 0.60,
-            "炼虚": 0.50,
-            "合体": 0.30,
-            "渡劫": 0.10,
+            "炼气": 1,
+            "筑基": 1.2,
+            "金丹": 1.5,
+            "元婴": 1.8,
+            "化神": 2.1,
+            "炼虚": 2.5,
+            "合体": 3,
+            "渡劫": 3.5,
+            "真仙": 4
         }[level] || 1;
         
         changeValue = baseValue * levelDifficulty / 100; // 按百分比
+    } else if (attribute === "道心") {
+        // 道心只加减基础值
+        changeValue = baseValue;
     } else {
         // 寿元、体魄、灵力的计算公式：基础值 + (当前值 * 变化百分比)
         changeValue = baseValue + (currentValue * 变化百分比);
@@ -288,7 +300,7 @@ export async function updateCharacterStatus(characterId: number, storyPush: Stor
         newStatus.突破成功系数 = Math.max(0, Math.min(1, currentStatus.突破成功系数 + change)); // 突破率范围为0-1
     }
     
-    // 检查角色是否死亡，三个条件
+    // 检查角色是否死亡
     if (newStatus.年龄 > newStatus.寿元 || newStatus.体魄 <= 0 || newStatus.道心 <= 0) {
         newStatus.是否死亡 = true;
     }
@@ -336,65 +348,26 @@ export async function attemptBreakthrough(characterId: number): Promise<{ succes
         };
     }
     
-    // 获取当前等级的突破难度系数
-    const currentLevelRewards = getBreakthroughRewardsByLevel(currentStatus.等级);
-    const baseSuccessRate = currentLevelRewards.突破难度系数;
-    
-    // 计算突破成功率
-    const userSuccessBonus = currentStatus.突破成功系数; // 用户积累的成功系数
-    
-    // 等级越高越难突破，适当调整基础成功率
-    const levelAdjustment = 1 - (currentLevelIndex * 0.05); // 等级越高，此值越小
-    
-    // 体魄、灵力对突破的影响
-    const attributeFactor = (currentStatus.体魄 + currentStatus.灵力) / 200; // 0-1之间
-    
-    // 计算最终突破成功率，确保在0-1之间
-    const finalSuccessRate = Math.min(1, Math.max(0, (baseSuccessRate + userSuccessBonus) * levelAdjustment * attributeFactor));
+
+
     
     // 生成随机数判断是否突破成功
     const randomValue = Math.random();
-    const isSuccessful = randomValue <= finalSuccessRate;
+    const isSuccessful = randomValue <= currentStatus.突破成功系数;
     
     if (isSuccessful) {
         // 突破成功，更新等级
         const nextLevel = cultivationLevels[currentLevelIndex + 1];
         newStatus.等级 = nextLevel as "炼气" | "筑基" | "金丹" | "元婴" | "化神" | "炼虚" | "合体" | "渡劫" | "真仙";
         
-        // 突破后重置突破成功系数
-        newStatus.突破成功系数 = 0;
-        
         // 获取下一个等级的属性限制
         const nextLevelLimits = getAttributeLimitsByLevel(newStatus.等级);
         
-        // 获取当前等级的奖励
-        const rewards = getBreakthroughRewardsByLevel(currentStatus.等级);
-        
-        // 应用突破奖励
-        if (Array.isArray(rewards.寿元)) {
-            newStatus.寿元 += getRandomRewardValue(rewards.寿元 as [number, number]);
-            // 确保不超过新等级的上限
-            newStatus.寿元 = Math.min(nextLevelLimits.寿元.max, newStatus.寿元);
-        }
-        
-        newStatus.道心 += rewards.道心;
+        // 确保所有属性不超过新等级的最大值
+        newStatus.寿元 = Math.min(nextLevelLimits.寿元.max, newStatus.寿元);
         newStatus.道心 = Math.min(nextLevelLimits.道心.max, newStatus.道心);
-        
-        if (Array.isArray(rewards.体魄)) {
-            newStatus.体魄 += getRandomRewardValue(rewards.体魄 as [number, number]);
-            newStatus.体魄 = Math.min(nextLevelLimits.体魄.max, newStatus.体魄);
-        }
-        
-        if (Array.isArray(rewards.灵力)) {
-            newStatus.灵力 += getRandomRewardValue(rewards.灵力 as [number, number]);
-            newStatus.灵力 = Math.min(nextLevelLimits.灵力.max, newStatus.灵力);
-        }
-        
-        // 确保所有属性都至少达到新等级的最小值
-        newStatus.寿元 = Math.max(nextLevelLimits.寿元.min, newStatus.寿元);
-        newStatus.道心 = Math.max(nextLevelLimits.道心.min, newStatus.道心);
-        newStatus.体魄 = Math.max(nextLevelLimits.体魄.min, newStatus.体魄);
-        newStatus.灵力 = Math.max(nextLevelLimits.灵力.min, newStatus.灵力);
+        newStatus.体魄 = Math.min(nextLevelLimits.体魄.max, newStatus.体魄);
+        newStatus.灵力 = Math.min(nextLevelLimits.灵力.max, newStatus.灵力);
         
         // 更新数据库
         await prisma.character.update({
@@ -412,9 +385,8 @@ export async function attemptBreakthrough(characterId: number): Promise<{ succes
             message: `突破成功！修为已提升至${nextLevel}期`
         };
     } else {
-        // 突破失败，但突破成功系数稍有提升（积累经验）
+        // 突破失败，突破成功系数提升0.05
         newStatus.突破成功系数 += 0.05;
-        newStatus.年龄 += 1;
         
         // 更新数据库
         await prisma.character.update({
@@ -429,7 +401,7 @@ export async function attemptBreakthrough(characterId: number): Promise<{ succes
         return { 
             success: false, 
             newStatus,
-            message: "突破失败，突破成功系数+0.05且年龄+1"
+            message: "突破失败，突破成功系数+0.05"
         };
     }
 }

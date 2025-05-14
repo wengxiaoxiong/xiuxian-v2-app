@@ -53,6 +53,11 @@ export const CharacterStatusSchema = z.object({
 export type CharacterDescriptionType = z.infer<typeof CharacterDescriptionSchema>;
 export type CharacterStatusType = z.infer<typeof CharacterStatusSchema>;
 
+/**
+ * @Action 创建角色
+ * @param name 角色名字
+ * @returns 创建好的角色对象
+ */
 export async function createCharacter(name: string): Promise<Character> {
     const USER_INPUT = "为" + name + "撰写角色档案和故事梗概，不论你让ta当主角配角，都要让ta活得精彩。"
 
@@ -95,7 +100,11 @@ export async function createCharacter(name: string): Promise<Character> {
     return character
 }
 
-
+/**
+ * @Action 获取角色ByName
+ * @param name 角色名称
+ * @returns 
+ */
 export async function getCharacterByName(name: string): Promise<Character> {
     const character = await prisma.character.findFirst({
         where: {
@@ -120,7 +129,11 @@ export async function getCharacterByName(name: string): Promise<Character> {
 }
 
 
-
+/**
+ * @Action 获取角色ByID
+ * @param id 
+ * @returns 
+ */
 export async function getCharacterById(id: number): Promise<Character> {
     const character = await prisma.character.findFirst({
         where: {
@@ -145,6 +158,11 @@ export async function getCharacterById(id: number): Promise<Character> {
     }
 }
 
+/**
+ * @Action 获取角色状态ByID
+ * @param id 
+ * @returns 角色状态ZOD
+ */
 export async function getCharacterStatus(id: number): Promise<CharacterStatusType> {
     const character = await prisma.character.findFirst({
         where: {
@@ -318,8 +336,14 @@ export async function updateCharacterStatus(characterId: number, storyPush: Stor
     return newStatus;
 }
 
-// 处理角色等级突破
+/**
+ * @Action 根据角色当前状态 来突破角色 目前可以直接随便给前端调用 没有做资格判断 后期补上
+ * @param characterId 角色id
+ * @returns 突破结果 和 最新状态
+ */
 export async function attemptBreakthrough(characterId: number): Promise<{ success: boolean, newStatus: CharacterStatusType, message: string }> {
+    // TODO 突破资格判断
+    
     // 获取角色当前状态
     const currentStatus = await getCharacterStatus(characterId);
     

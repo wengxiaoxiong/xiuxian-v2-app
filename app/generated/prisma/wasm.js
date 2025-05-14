@@ -155,8 +155,10 @@ exports.Prisma.GamePushScalarFieldEnum = {
   id: 'id',
   push: 'push',
   gameId: 'gameId',
+  isSummary: 'isSummary',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  sortIndex: 'sortIndex'
 };
 
 exports.Prisma.SortOrder = {

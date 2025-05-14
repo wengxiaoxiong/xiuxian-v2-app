@@ -43,9 +43,9 @@ export const CharacterStatusSchema = z.object({
     突破成功系数: z.number().min(0).max(1).default(0),
     年龄: z.number().min(0).default(0),
     寿元: z.number().min(0).max(1000).default(100),
-    体魄: z.number().int().min(0).max(300).default(40),
+    体魄: z.number().min(0).max(300).default(40),
     道心: z.number().min(0).max(7).default(3),
-    灵力: z.number().int().min(0).default(40),
+    灵力: z.number().min(0).default(40),
     是否死亡: z.boolean().default(false)
 });
 
@@ -147,14 +147,18 @@ export async function getCharacterById(id: number): Promise<Character> {
 
     // 使用CharacterSchema解析Json类型的description
     const parsedDescription = CharacterDescriptionSchema.safeParse(character.description)
-    
+    const parsedStatus = CharacterStatusSchema.safeParse(character.status)
     if (!parsedDescription.success) {
         throw new Error("角色数据格式错误")
+    }
+    if (!parsedStatus.success) {
+        throw new Error("角色状态数据格式错误")
     }
 
     return {
         ...character,
-        description: parsedDescription.data
+        description: parsedDescription.data,
+        status: parsedStatus.data
     }
 }
 

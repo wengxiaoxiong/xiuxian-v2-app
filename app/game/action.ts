@@ -62,7 +62,6 @@ const summaryPushSchema = z.object({
 
 export type SummaryPushType = z.infer<typeof summaryPushSchema>;
 
-
 /**
  * @Action 开始游戏
  * @param characterId 角色id
@@ -118,7 +117,8 @@ export async function startGame(characterId: number) {
             isEnded: false,
             gamePush: {
                 create: {
-                    push: gamePush
+                    push: gamePush,
+                    sortIndex: 0 // 初始节点的排序索引设为0
                 }
             }
         },
@@ -155,7 +155,14 @@ export async function pushGame(gameId: number, characterId: number, choice: stri
             id: gameId
         },
         include: {
-            gamePush: true
+            gamePush: {
+                where: {
+                    isSummary: false
+                },
+                orderBy: {
+                    sortIndex: 'asc'
+                }
+            }
         }
     })
 
@@ -164,14 +171,41 @@ export async function pushGame(gameId: number, characterId: number, choice: stri
     }
 
     // gamePush不能为空
-    if (!game.gamePush) {
-        throw new Error("游戏推送到不能为空")
+    if (!game.gamePush || game.gamePush.length === 0) {
+        throw new Error("游戏推送不能为空")
     }
 
-    let gameContext = game.gamePush.map((push) => push.push).join("\n")
+    let gameContext = game.gamePush.map((push) => {
+        const pushData = push.push
+        const storyPush = storyPushSchema.safeParse(pushData)
+        if (!storyPush.success) {
+            const summaryPush = summaryPushSchema.safeParse(pushData)
+            if (!summaryPush.success) {
+                throw new Error("游戏推送数据格式错误")
+            }
+            return JSON.stringify(summaryPush.data.剧情要素)
+        }
+        const { 节点要素 } = storyPush.data
+        const { 剧情要素 } = 节点要素
 
-    // 判断game.gamePush是否超过3个节点，若超过则该浓缩剧情
-    if (game.gamePush.length > 3) {
+        return JSON.stringify(剧情要素)
+    }).join("\n")
+
+    // 判断game.gamePush是否超过3个节点，若超过则总结前2个节点
+    if (game.gamePush.length >= 3) {
+        // 获取前2个节点
+        const nodesToSummarize = game.gamePush.slice(0, 2)
+        // 获取当前最小的sortIndex，用于总结节点，只考虑非总结节点
+        const minSortIndex = await prisma.gamePush.findFirst({
+            where: { 
+                gameId,
+                isSummary: false // 只查询非总结节点
+            },
+            orderBy: { sortIndex: 'asc' },
+            select: { sortIndex: true }
+        });
+        // 新的总结节点应该比最小的索引还要小
+        const summaryIndex = (minSortIndex?.sortIndex || 0) - 1;
 
         const dict = await prisma.dictionary.findFirst({
             where: {
@@ -183,7 +217,26 @@ export async function pushGame(gameId: number, characterId: number, choice: stri
             throw new Error("没有找到Prompt角色描述")
         }
 
-        const prompt = dict.value
+        const summaryContext = nodesToSummarize.map((push) => {
+            const pushData = push.push
+            const storyPush = storyPushSchema.safeParse(pushData)
+            if (!storyPush.success) {
+                const summaryPush = summaryPushSchema.safeParse(pushData)
+                if (!summaryPush.success) {
+                    throw new Error("游戏推送数据格式错误")
+                }
+                return JSON.stringify(summaryPush.data.剧情要素)
+            }
+            
+            const { 节点要素 } = storyPush.data
+            const { 剧情要素 } = 节点要素
+            return JSON.stringify(剧情要素)
+        }).join("\n")
+
+        console.log("summaryContext")
+        console.log(summaryContext)
+
+        const prompt = dict.value.replace("{SUMMARY_CONTEXT}", summaryContext)
 
         const { object: summaryPush } = await generateObject({
             model: deepseek("deepseek-chat"),
@@ -196,25 +249,41 @@ export async function pushGame(gameId: number, characterId: number, choice: stri
             浓缩剧情: ${JSON.stringify(summaryPush)}
         `)
 
+        // 将前2个节点标记为已总结
+        await Promise.all(nodesToSummarize.map(node => 
+            prisma.gamePush.update({
+                where: {
+                    id: node.id
+                },
+                data: {
+                    isSummary: true
+                }
+            })
+        ))
 
-        gameContext = JSON.stringify(summaryPush)
-        
-        // 降原本的3个push清空，添加新的summaryPush
-        await prisma.gamePush.deleteMany({
-            where: {
-                gameId: gameId
-            }
-        })
-
+        // 添加总结的节点，设置动态的排序索引，确保它在最前面且总结节点之间有序
         await prisma.gamePush.create({
             data: {
                 gameId: gameId,
-                push: summaryPush
+                push: summaryPush,
+                isSummary: false,
+                sortIndex: summaryIndex  // 使用动态计算的索引值
             }
         })
 
-    }
+        // 重新获取最新的非总结节点，按排序索引排序
+        const updatedPushes = await prisma.gamePush.findMany({
+            where: {
+                gameId: gameId,
+                isSummary: false
+            },
+            orderBy: {
+                sortIndex: 'asc'
+            }
+        })
 
+        gameContext = updatedPushes.map((push) => JSON.stringify(push.push)).join("\n")
+    }
 
     const character = await getCharacterById(characterId)
     const characterStatusSchema = CharacterStatusSchema.safeParse(character.status)
@@ -235,7 +304,7 @@ export async function pushGame(gameId: number, characterId: number, choice: stri
     const dynamicInput = `
     当前角色状态: ${JSON.stringify(currentStatus)}
     玩家选择: ${choice}
-    游戏上下文: ${gameContext}
+    游戏上下文: ${JSON.stringify(gameContext)}
     `
 
     console.log(dynamicInput)
@@ -268,6 +337,17 @@ export async function pushGame(gameId: number, characterId: number, choice: stri
         更新后状态: ${JSON.stringify(newStatus)}
     `)
 
+    // 获取当前最大的sortIndex
+    const maxSortIndex = await prisma.gamePush.findFirst({
+        where: { 
+            gameId,
+            isSummary: false // 只查询非总结节点
+        },
+        orderBy: { sortIndex: 'desc' },
+        select: { sortIndex: true }
+    });
+    const newSortIndex = (maxSortIndex?.sortIndex || 0) + 1;
+
     // 更新游戏状态
     await prisma.game.update({
         where: {
@@ -276,7 +356,8 @@ export async function pushGame(gameId: number, characterId: number, choice: stri
         data: {
             gamePush: {
                 create: {
-                    push: gamePush
+                    push: gamePush,
+                    sortIndex: newSortIndex  // 使用递增的sortIndex确保新节点排在最后
                 }
             }
         }

@@ -5101,33 +5101,41 @@ export namespace Prisma {
   export type GamePushAvgAggregateOutputType = {
     id: number | null
     gameId: number | null
+    sortIndex: number | null
   }
 
   export type GamePushSumAggregateOutputType = {
     id: number | null
     gameId: number | null
+    sortIndex: number | null
   }
 
   export type GamePushMinAggregateOutputType = {
     id: number | null
     gameId: number | null
+    isSummary: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
+    sortIndex: number | null
   }
 
   export type GamePushMaxAggregateOutputType = {
     id: number | null
     gameId: number | null
+    isSummary: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
+    sortIndex: number | null
   }
 
   export type GamePushCountAggregateOutputType = {
     id: number
     push: number
     gameId: number
+    isSummary: number
     createdAt: number
     updatedAt: number
+    sortIndex: number
     _all: number
   }
 
@@ -5135,33 +5143,41 @@ export namespace Prisma {
   export type GamePushAvgAggregateInputType = {
     id?: true
     gameId?: true
+    sortIndex?: true
   }
 
   export type GamePushSumAggregateInputType = {
     id?: true
     gameId?: true
+    sortIndex?: true
   }
 
   export type GamePushMinAggregateInputType = {
     id?: true
     gameId?: true
+    isSummary?: true
     createdAt?: true
     updatedAt?: true
+    sortIndex?: true
   }
 
   export type GamePushMaxAggregateInputType = {
     id?: true
     gameId?: true
+    isSummary?: true
     createdAt?: true
     updatedAt?: true
+    sortIndex?: true
   }
 
   export type GamePushCountAggregateInputType = {
     id?: true
     push?: true
     gameId?: true
+    isSummary?: true
     createdAt?: true
     updatedAt?: true
+    sortIndex?: true
     _all?: true
   }
 
@@ -5255,8 +5271,10 @@ export namespace Prisma {
     id: number
     push: JsonValue
     gameId: number
+    isSummary: boolean
     createdAt: Date
     updatedAt: Date
+    sortIndex: number
     _count: GamePushCountAggregateOutputType | null
     _avg: GamePushAvgAggregateOutputType | null
     _sum: GamePushSumAggregateOutputType | null
@@ -5282,8 +5300,10 @@ export namespace Prisma {
     id?: boolean
     push?: boolean
     gameId?: boolean
+    isSummary?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    sortIndex?: boolean
     game?: boolean | GameDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["gamePush"]>
 
@@ -5293,11 +5313,13 @@ export namespace Prisma {
     id?: boolean
     push?: boolean
     gameId?: boolean
+    isSummary?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    sortIndex?: boolean
   }
 
-  export type GamePushOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "push" | "gameId" | "createdAt" | "updatedAt", ExtArgs["result"]["gamePush"]>
+  export type GamePushOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "push" | "gameId" | "isSummary" | "createdAt" | "updatedAt" | "sortIndex", ExtArgs["result"]["gamePush"]>
   export type GamePushInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     game?: boolean | GameDefaultArgs<ExtArgs>
   }
@@ -5311,8 +5333,10 @@ export namespace Prisma {
       id: number
       push: Prisma.JsonValue
       gameId: number
+      isSummary: boolean
       createdAt: Date
       updatedAt: Date
+      sortIndex: number
     }, ExtArgs["result"]["gamePush"]>
     composites: {}
   }
@@ -5686,8 +5710,10 @@ export namespace Prisma {
     readonly id: FieldRef<"GamePush", 'Int'>
     readonly push: FieldRef<"GamePush", 'Json'>
     readonly gameId: FieldRef<"GamePush", 'Int'>
+    readonly isSummary: FieldRef<"GamePush", 'Boolean'>
     readonly createdAt: FieldRef<"GamePush", 'DateTime'>
     readonly updatedAt: FieldRef<"GamePush", 'DateTime'>
+    readonly sortIndex: FieldRef<"GamePush", 'Int'>
   }
     
 
@@ -6113,8 +6139,10 @@ export namespace Prisma {
     id: 'id',
     push: 'push',
     gameId: 'gameId',
+    isSummary: 'isSummary',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    sortIndex: 'sortIndex'
   };
 
   export type GamePushScalarFieldEnum = (typeof GamePushScalarFieldEnum)[keyof typeof GamePushScalarFieldEnum]
@@ -6496,8 +6524,10 @@ export namespace Prisma {
     id?: IntFilter<"GamePush"> | number
     push?: JsonFilter<"GamePush">
     gameId?: IntFilter<"GamePush"> | number
+    isSummary?: BoolFilter<"GamePush"> | boolean
     createdAt?: DateTimeFilter<"GamePush"> | Date | string
     updatedAt?: DateTimeFilter<"GamePush"> | Date | string
+    sortIndex?: IntFilter<"GamePush"> | number
     game?: XOR<GameScalarRelationFilter, GameWhereInput>
   }
 
@@ -6505,8 +6535,10 @@ export namespace Prisma {
     id?: SortOrder
     push?: SortOrder
     gameId?: SortOrder
+    isSummary?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    sortIndex?: SortOrder
     game?: GameOrderByWithRelationInput
   }
 
@@ -6517,8 +6549,10 @@ export namespace Prisma {
     NOT?: GamePushWhereInput | GamePushWhereInput[]
     push?: JsonFilter<"GamePush">
     gameId?: IntFilter<"GamePush"> | number
+    isSummary?: BoolFilter<"GamePush"> | boolean
     createdAt?: DateTimeFilter<"GamePush"> | Date | string
     updatedAt?: DateTimeFilter<"GamePush"> | Date | string
+    sortIndex?: IntFilter<"GamePush"> | number
     game?: XOR<GameScalarRelationFilter, GameWhereInput>
   }, "id">
 
@@ -6526,8 +6560,10 @@ export namespace Prisma {
     id?: SortOrder
     push?: SortOrder
     gameId?: SortOrder
+    isSummary?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    sortIndex?: SortOrder
     _count?: GamePushCountOrderByAggregateInput
     _avg?: GamePushAvgOrderByAggregateInput
     _max?: GamePushMaxOrderByAggregateInput
@@ -6542,8 +6578,10 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"GamePush"> | number
     push?: JsonWithAggregatesFilter<"GamePush">
     gameId?: IntWithAggregatesFilter<"GamePush"> | number
+    isSummary?: BoolWithAggregatesFilter<"GamePush"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"GamePush"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"GamePush"> | Date | string
+    sortIndex?: IntWithAggregatesFilter<"GamePush"> | number
   }
 
   export type UserCreateInput = {
@@ -6781,8 +6819,10 @@ export namespace Prisma {
 
   export type GamePushCreateInput = {
     push: JsonNullValueInput | InputJsonValue
+    isSummary?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    sortIndex?: number
     game: GameCreateNestedOneWithoutGamePushInput
   }
 
@@ -6790,14 +6830,18 @@ export namespace Prisma {
     id?: number
     push: JsonNullValueInput | InputJsonValue
     gameId: number
+    isSummary?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    sortIndex?: number
   }
 
   export type GamePushUpdateInput = {
     push?: JsonNullValueInput | InputJsonValue
+    isSummary?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sortIndex?: IntFieldUpdateOperationsInput | number
     game?: GameUpdateOneRequiredWithoutGamePushNestedInput
   }
 
@@ -6805,30 +6849,38 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     push?: JsonNullValueInput | InputJsonValue
     gameId?: IntFieldUpdateOperationsInput | number
+    isSummary?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sortIndex?: IntFieldUpdateOperationsInput | number
   }
 
   export type GamePushCreateManyInput = {
     id?: number
     push: JsonNullValueInput | InputJsonValue
     gameId: number
+    isSummary?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    sortIndex?: number
   }
 
   export type GamePushUpdateManyMutationInput = {
     push?: JsonNullValueInput | InputJsonValue
+    isSummary?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sortIndex?: IntFieldUpdateOperationsInput | number
   }
 
   export type GamePushUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     push?: JsonNullValueInput | InputJsonValue
     gameId?: IntFieldUpdateOperationsInput | number
+    isSummary?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sortIndex?: IntFieldUpdateOperationsInput | number
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -7267,32 +7319,40 @@ export namespace Prisma {
     id?: SortOrder
     push?: SortOrder
     gameId?: SortOrder
+    isSummary?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    sortIndex?: SortOrder
   }
 
   export type GamePushAvgOrderByAggregateInput = {
     id?: SortOrder
     gameId?: SortOrder
+    sortIndex?: SortOrder
   }
 
   export type GamePushMaxOrderByAggregateInput = {
     id?: SortOrder
     gameId?: SortOrder
+    isSummary?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    sortIndex?: SortOrder
   }
 
   export type GamePushMinOrderByAggregateInput = {
     id?: SortOrder
     gameId?: SortOrder
+    isSummary?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    sortIndex?: SortOrder
   }
 
   export type GamePushSumOrderByAggregateInput = {
     id?: SortOrder
     gameId?: SortOrder
+    sortIndex?: SortOrder
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -7728,15 +7788,19 @@ export namespace Prisma {
 
   export type GamePushCreateWithoutGameInput = {
     push: JsonNullValueInput | InputJsonValue
+    isSummary?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    sortIndex?: number
   }
 
   export type GamePushUncheckedCreateWithoutGameInput = {
     id?: number
     push: JsonNullValueInput | InputJsonValue
+    isSummary?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    sortIndex?: number
   }
 
   export type GamePushCreateOrConnectWithoutGameInput = {
@@ -7802,8 +7866,10 @@ export namespace Prisma {
     id?: IntFilter<"GamePush"> | number
     push?: JsonFilter<"GamePush">
     gameId?: IntFilter<"GamePush"> | number
+    isSummary?: BoolFilter<"GamePush"> | boolean
     createdAt?: DateTimeFilter<"GamePush"> | Date | string
     updatedAt?: DateTimeFilter<"GamePush"> | Date | string
+    sortIndex?: IntFilter<"GamePush"> | number
   }
 
   export type GameCreateWithoutGamePushInput = {
@@ -7892,28 +7958,36 @@ export namespace Prisma {
   export type GamePushCreateManyGameInput = {
     id?: number
     push: JsonNullValueInput | InputJsonValue
+    isSummary?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    sortIndex?: number
   }
 
   export type GamePushUpdateWithoutGameInput = {
     push?: JsonNullValueInput | InputJsonValue
+    isSummary?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sortIndex?: IntFieldUpdateOperationsInput | number
   }
 
   export type GamePushUncheckedUpdateWithoutGameInput = {
     id?: IntFieldUpdateOperationsInput | number
     push?: JsonNullValueInput | InputJsonValue
+    isSummary?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sortIndex?: IntFieldUpdateOperationsInput | number
   }
 
   export type GamePushUncheckedUpdateManyWithoutGameInput = {
     id?: IntFieldUpdateOperationsInput | number
     push?: JsonNullValueInput | InputJsonValue
+    isSummary?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sortIndex?: IntFieldUpdateOperationsInput | number
   }
 
 
